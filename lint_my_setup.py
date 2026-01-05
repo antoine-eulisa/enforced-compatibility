@@ -38,7 +38,6 @@ def buildVersion(versionAsString, path):
         raise e
 
 def buildDependency(dependency, path):
-
     return Dependency(name=dependency['name'], version=buildVersion(dependency['version'], path))
 
 
@@ -65,12 +64,12 @@ for dirpath, _, filenames in os.walk(directory):
                         raise ValueError(f"project name={name} is defined twice, the first time in {installed_versions[name].path} and the second time in {path}")
                     versions = data.get("versions")
                     dependencies = data.get("dependencies")
-                    print(f"dep={dependencies}")
+                    #print(f"dep={dependencies}")
                     installed_versions[name] = System(path=path, 
                         name=name, 
                         versions=list(map(lambda v: buildVersion(v, path), versions)),
                         dependencies=list(map(lambda d: buildDependency(d, path), dependencies)) )
-                    print(f"{path}: name={name}")
+                    #print(f"{path}: name={name}")
                     #print(f"versions = {versions}")
                     #print(f"versions = {installed_versions}")
 
@@ -78,15 +77,20 @@ for dirpath, _, filenames in os.walk(directory):
                 logging.exception(f"Error processing {path}")
                 raise e
 
-print(f"versions = {installed_versions}")
+#print(f"versions = {installed_versions}")
 
 #now iterating over all installations to make sure their dependencies are correctly met
 
 errors = []
 
 for installation_name in installed_versions:
+    major_versions = []
+    for version in installed_versions[installation_name].versions:
+        if version.major in major_versions:
+            errors.append(f"{installation_name} has multiple versions deployed with the same major number, either those are backward compatible and only one version should be used or different major numbers should be used, installed versions are {installed_versions[installation_name].versions}")
+        major_versions.append(version.major)
+        
     for dependency in installed_versions[installation_name].dependencies:
-        found_at_least_one_version = False
         if dependency.name in installed_versions:
             versions_of_this_dependency = installed_versions[dependency.name].versions
             if len(versions_of_this_dependency) > 0:
@@ -94,7 +98,7 @@ for installation_name in installed_versions:
                 for dependency_installed_version in installed_versions[dependency.name].versions:
                     if dependency_installed_version.major == dependency.version.major \
                         and dependency_installed_version.minor >= dependency.version.minor \
-                        and dependency_installed_version.patch >= dependency.version.patch:
+                        and (dependency_installed_version.minor > dependency.version.minor or dependency_installed_version.patch >= dependency.version.patch):
                         good_version_found = True
                         break
                 if not good_version_found:
