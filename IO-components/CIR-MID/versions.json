@@ -1,0 +1,11 @@
+{"name": "CIR",
+"versions": ["1.0.1", "2.10.29"],
+"dependencies": [{
+    "name": "SBMS",
+    "version": "1.3.2"
+   },{
+    "name": "ESP",
+    "version": "14.2.1"
+    }]
+}
+

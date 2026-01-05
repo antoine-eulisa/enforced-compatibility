@@ -1,0 +1,11 @@
+{"name": "ETIAS",
+"versions": ["1.0.1"],
+"dependencies": [{
+    "name": "CIR",
+    "version": "2.0.1"
+   },{
+    "name": "ESP",
+    "version": "14.2.1"
+    }]
+}
+
